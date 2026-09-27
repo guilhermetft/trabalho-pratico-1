@@ -100,3 +100,42 @@ dotnet run                  # Swagger em /swagger
 ```
 
 A connection string está em `Locadora.Api/appsettings.json`.
+
+## Etapa 2 - Implementação do Backend
+
+APIs RESTful com CRUD completo para as 5 entidades, usando `Dtos/` para entrada/saída (não expõe as entidades do EF diretamente) e validação via Data Annotations (`[Required]`, `[StringLength]`, `[Range]`, `[RegularExpression]`, `[EmailAddress]`, `IValidatableObject` para datas).
+
+### Endpoints CRUD
+
+| Recurso | Rotas |
+|---|---|
+| Fabricantes | `GET/POST /api/fabricantes`, `GET/PUT/DELETE /api/fabricantes/{id}` |
+| Categorias | `GET/POST /api/categorias`, `GET/PUT/DELETE /api/categorias/{id}` |
+| Veiculos | `GET/POST /api/veiculos`, `GET/PUT/DELETE /api/veiculos/{id}` |
+| Clientes | `GET/POST /api/clientes`, `GET/PUT/DELETE /api/clientes/{id}` |
+| Alugueis | `GET/POST /api/alugueis`, `GET/PUT/DELETE /api/alugueis/{id}`, `POST /api/alugueis/{id}/devolucao` |
+
+### Regras de negócio (Alugueis)
+
+- Só é possível criar aluguel se o veículo estiver com `Status = Disponivel` (senão `409 Conflict`).
+- `KmInicial` é preenchido automaticamente com a quilometragem atual do veículo; ao criar o aluguel, `Veiculo.Status` passa para `Alugado`.
+- `POST /api/alugueis/{id}/devolucao` recebe `KmFinal` (e opcionalmente `DataDevolucao`), calcula `ValorTotal` (dias corridos arredondados para cima × `ValorDiaria`), atualiza a quilometragem do veículo e volta `Status` para `Disponivel`.
+- Aluguel já devolvido não pode ser editado (`PUT`) nem devolvido novamente.
+- `DELETE` de um aluguel ainda ativo libera o veículo (`Status = Disponivel`).
+
+### 5 filtros com joins (item 2.5)
+
+| # | Rota | Join |
+|---|---|---|
+| 1 | `GET /api/veiculos/disponiveis?categoriaId=&fabricanteId=` | INNER JOIN Veiculos × Categorias × Fabricantes (`Include`) |
+| 2 | `GET /api/veiculos/por-fabricante/{fabricanteId}` | INNER JOIN Veiculos × Fabricantes × Categorias (`Include`) |
+| 3 | `GET /api/alugueis/por-cliente/{clienteId}` | INNER JOIN Alugueis × Clientes × Veiculos (LINQ `join` explícito) |
+| 4 | `GET /api/alugueis/atrasados` | INNER JOIN Alugueis × Clientes × Veiculos (LINQ `join` explícito) |
+| 5 | `GET /api/clientes/sem-alugueis` | LEFT JOIN Clientes × Alugueis (`GroupJoin` + `SelectMany(DefaultIfEmpty)`) |
+
+### Tratamento de erros
+
+- `[ApiController]` retorna `400` automaticamente com `ProblemDetails` para falhas de validação dos DTOs.
+- Violações de índice único ou de FK (`DbUpdateException`) são convertidas em `409 Conflict` com mensagem descritiva.
+- Exceções não tratadas caem no middleware global (`UseExceptionHandler` em `Program.cs`) e retornam `500` em formato `ProblemDetails`.
+- Enums (`StatusVeiculo`) trafegam como string no JSON (`Disponivel`/`Alugado`/`Manutencao`).
