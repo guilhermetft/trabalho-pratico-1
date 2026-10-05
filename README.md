@@ -139,3 +139,9 @@ APIs RESTful com CRUD completo para as 5 entidades, usando `Dtos/` para entrada/
 - Violações de índice único ou de FK (`DbUpdateException`) são convertidas em `409 Conflict` com mensagem descritiva.
 - Exceções não tratadas caem no middleware global (`UseExceptionHandler` em `Program.cs`) e retornam `500` em formato `ProblemDetails`.
 - Enums (`StatusVeiculo`) trafegam como string no JSON (`Disponivel`/`Alugado`/`Manutencao`).
+
+## Etapa 3 - Testes e Documentação
+
+- **Swagger (3.1):** integrado via Swashbuckle, em `/swagger` (Development). Inclui título/descrição da API, comentários XML (`<summary>`) em cada endpoint e os códigos de resposta (`ProducesResponseType`) de cada rota.
+- **Documentação dos endpoints (3.2):** [`docs/API.md`](docs/API.md) - métodos HTTP, parâmetros, regras de validação e códigos de resposta.
+- **Relatório de testes (3.3):** [`docs/RELATORIO-TESTES.md`](docs/RELATORIO-TESTES.md) - 35 testes pelo Swagger UI (todos os endpoints, os 5 filtros com join e os principais erros 400/409), cada um com chamada, retorno e print em [`docs/prints/`](docs/prints).

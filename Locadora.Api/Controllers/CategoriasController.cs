@@ -8,6 +8,8 @@ namespace Locadora.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
+[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 public class CategoriasController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -25,6 +27,10 @@ public class CategoriasController : ControllerBase
         ValorDiariaBase = c.ValorDiariaBase
     };
 
+    /// <summary>
+    /// Lista todos os categorias.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CategoriaDto>>> GetAll()
     {
@@ -36,6 +42,11 @@ public class CategoriasController : ControllerBase
         return Ok(categorias);
     }
 
+    /// <summary>
+    /// Obtém a categoria pelo Id.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<CategoriaDto>> GetById(int id)
     {
@@ -48,6 +59,12 @@ public class CategoriasController : ControllerBase
         return Ok(ToDto(categoria));
     }
 
+    /// <summary>
+    /// Cadastra a categoria.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpPost]
     public async Task<ActionResult<CategoriaDto>> Create(CategoriaCreateDto dto)
     {
@@ -72,6 +89,13 @@ public class CategoriasController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = categoria.Id }, ToDto(categoria));
     }
 
+    /// <summary>
+    /// Atualiza a categoria existente.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, CategoriaUpdateDto dto)
     {
@@ -97,6 +121,12 @@ public class CategoriasController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Remove a categoria.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {

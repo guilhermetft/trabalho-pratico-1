@@ -8,6 +8,8 @@ namespace Locadora.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
+[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 public class ClientesController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -27,6 +29,10 @@ public class ClientesController : ControllerBase
         Cnh = c.Cnh
     };
 
+    /// <summary>
+    /// Lista todos os clientes.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ClienteDto>>> GetAll()
     {
@@ -38,6 +44,11 @@ public class ClientesController : ControllerBase
         return Ok(clientes);
     }
 
+    /// <summary>
+    /// Obtém o cliente pelo Id.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ClienteDto>> GetById(int id)
     {
@@ -54,6 +65,7 @@ public class ClientesController : ControllerBase
     /// Filtro 5: clientes que nunca alugaram nenhum veículo.
     /// LEFT JOIN Clientes x Alugueis (GroupJoin + DefaultIfEmpty), diferente do INNER JOIN usado nos demais filtros.
     /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [HttpGet("sem-alugueis")]
     public async Task<ActionResult<IEnumerable<ClienteDto>>> GetSemAlugueis()
     {
@@ -81,6 +93,12 @@ public class ClientesController : ControllerBase
         return Ok(clientes);
     }
 
+    /// <summary>
+    /// Cadastra o cliente.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpPost]
     public async Task<ActionResult<ClienteDto>> Create(ClienteCreateDto dto)
     {
@@ -107,6 +125,13 @@ public class ClientesController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = cliente.Id }, ToDto(cliente));
     }
 
+    /// <summary>
+    /// Atualiza o cliente existente.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, ClienteUpdateDto dto)
     {
@@ -134,6 +159,12 @@ public class ClientesController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Remove o cliente.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {

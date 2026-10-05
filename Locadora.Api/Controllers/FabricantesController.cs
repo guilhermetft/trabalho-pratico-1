@@ -8,6 +8,8 @@ namespace Locadora.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
+[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 public class FabricantesController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -24,6 +26,10 @@ public class FabricantesController : ControllerBase
         PaisOrigem = f.PaisOrigem
     };
 
+    /// <summary>
+    /// Lista todos os fabricantes.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<FabricanteDto>>> GetAll()
     {
@@ -35,6 +41,11 @@ public class FabricantesController : ControllerBase
         return Ok(fabricantes);
     }
 
+    /// <summary>
+    /// Obtém o fabricante pelo Id.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<FabricanteDto>> GetById(int id)
     {
@@ -47,6 +58,12 @@ public class FabricantesController : ControllerBase
         return Ok(ToDto(fabricante));
     }
 
+    /// <summary>
+    /// Cadastra o fabricante.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpPost]
     public async Task<ActionResult<FabricanteDto>> Create(FabricanteCreateDto dto)
     {
@@ -70,6 +87,13 @@ public class FabricantesController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = fabricante.Id }, ToDto(fabricante));
     }
 
+    /// <summary>
+    /// Atualiza o fabricante existente.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, FabricanteUpdateDto dto)
     {
@@ -94,6 +118,12 @@ public class FabricantesController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Remove o fabricante.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {

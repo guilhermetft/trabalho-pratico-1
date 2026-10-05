@@ -8,6 +8,8 @@ namespace Locadora.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
+[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 public class AlugueisController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -35,6 +37,10 @@ public class AlugueisController : ControllerBase
             VeiculoPlaca = a.Veiculo.Placa
         });
 
+    /// <summary>
+    /// Lista todos os alugueis.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AluguelDto>>> GetAll()
     {
@@ -45,6 +51,11 @@ public class AlugueisController : ControllerBase
         return Ok(alugueis);
     }
 
+    /// <summary>
+    /// Obtém o aluguel pelo Id.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<AluguelDto>> GetById(int id)
     {
@@ -61,6 +72,8 @@ public class AlugueisController : ControllerBase
     /// Filtro 3: aluguéis por cliente, com dados do veículo.
     /// INNER JOIN Alugueis x Clientes x Veiculos (via LINQ join explícito).
     /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpGet("por-cliente/{clienteId:int}")]
     public async Task<ActionResult<IEnumerable<AluguelDto>>> GetPorCliente(int clienteId)
     {
@@ -100,6 +113,7 @@ public class AlugueisController : ControllerBase
     /// Filtro 4: aluguéis em atraso (não devolvidos e com previsão de devolução vencida).
     /// INNER JOIN Alugueis x Clientes x Veiculos (via LINQ join explícito).
     /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [HttpGet("atrasados")]
     public async Task<ActionResult<IEnumerable<AluguelDto>>> GetAtrasados()
     {
@@ -131,6 +145,12 @@ public class AlugueisController : ControllerBase
         return Ok(alugueis);
     }
 
+    /// <summary>
+    /// Cadastra o aluguel.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpPost]
     public async Task<ActionResult<AluguelDto>> Create(AluguelCreateDto dto)
     {
@@ -178,6 +198,13 @@ public class AlugueisController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = aluguel.Id }, criado);
     }
 
+    /// <summary>
+    /// Atualiza o aluguel existente.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, AluguelUpdateDto dto)
     {
@@ -212,6 +239,10 @@ public class AlugueisController : ControllerBase
     /// Registra a devolução do veículo: calcula o valor total, atualiza a quilometragem
     /// e libera o veículo (status volta a Disponivel).
     /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpPost("{id:int}/devolucao")]
     public async Task<ActionResult<AluguelDto>> Devolver(int id, AluguelDevolucaoDto dto)
     {
@@ -260,6 +291,12 @@ public class AlugueisController : ControllerBase
         return Ok(atualizado);
     }
 
+    /// <summary>
+    /// Remove o aluguel.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {

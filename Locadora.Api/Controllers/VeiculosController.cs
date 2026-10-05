@@ -8,6 +8,8 @@ namespace Locadora.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
+[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 public class VeiculosController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -33,6 +35,10 @@ public class VeiculosController : ControllerBase
             ValorDiariaBase = v.Categoria.ValorDiariaBase
         });
 
+    /// <summary>
+    /// Lista todos os veiculos.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<VeiculoDto>>> GetAll()
     {
@@ -43,6 +49,11 @@ public class VeiculosController : ControllerBase
         return Ok(veiculos);
     }
 
+    /// <summary>
+    /// Obtém o veículo pelo Id.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<VeiculoDto>> GetById(int id)
     {
@@ -59,6 +70,7 @@ public class VeiculosController : ControllerBase
     /// Filtro 1: veículos disponíveis, com filtros opcionais de categoria e fabricante.
     /// INNER JOIN Veiculos x Categorias x Fabricantes (via Include, todas as FKs são obrigatórias).
     /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [HttpGet("disponiveis")]
     public async Task<ActionResult<IEnumerable<VeiculoDto>>> GetDisponiveis([FromQuery] int? categoriaId, [FromQuery] int? fabricanteId)
     {
@@ -88,6 +100,8 @@ public class VeiculosController : ControllerBase
     /// Filtro 2: veículos de um fabricante específico, com dados da categoria.
     /// INNER JOIN Veiculos x Fabricantes x Categorias (via Include).
     /// </summary>
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpGet("por-fabricante/{fabricanteId:int}")]
     public async Task<ActionResult<IEnumerable<VeiculoDto>>> GetPorFabricante(int fabricanteId)
     {
@@ -109,6 +123,12 @@ public class VeiculosController : ControllerBase
         return Ok(veiculos);
     }
 
+    /// <summary>
+    /// Cadastra o veículo.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpPost]
     public async Task<ActionResult<VeiculoDto>> Create(VeiculoCreateDto dto)
     {
@@ -150,6 +170,13 @@ public class VeiculosController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = veiculo.Id }, criado);
     }
 
+    /// <summary>
+    /// Atualiza o veículo existente.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, VeiculoUpdateDto dto)
     {
@@ -191,6 +218,12 @@ public class VeiculosController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Remove o veículo.
+    /// </summary>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
